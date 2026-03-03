@@ -1,0 +1,23 @@
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+from src.app import app
+
+
+def test_health_check():
+    client = app.test_client()
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.get_json()["status"] == "ok"
+
+
+def test_get_quote():
+    client = app.test_client()
+    response = client.get("/")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert "quote" in data
+    assert isinstance(data["quote"], str)
+    assert len(data["quote"]) > 0

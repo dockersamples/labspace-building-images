@@ -1,25 +1,29 @@
 metadata:
-  id: dockersamples/labspace-building-images
+  id: building-container-images
   sourceRepo: github.com/dockersamples/labspace-building-images
-  contentVersion: abcd123 # Will be filled in during CI
+  contentVersion: 1.0.0
 
-title: Labspace starter
-description: |
-  A basic template for creating a Labspace, including all of the boilerplate needed to write and publish a Labspace.
+title: "Building Container Images: Best Practices"
+description: Transform a basic Dockerfile into a production-grade container image by mastering layer caching, multi-stage builds, non-root users, and secure secret handling.
 
 sections:
-  - title: Introduction
-    contentPath: .labspace/01-introduction.md
-  - title: Main Content 1
-    contentPath: .labspace/02-main-content.md
-  - title: Conclusion
-    contentPath: .labspace/03-conclusion.md
+  - title: "Welcome & Your First Build"
+    contentPath: 01-welcome.md
+  - title: "Understanding Image Layers"
+    contentPath: 02-image-layers.md
+  - title: "Dockerfile Best Practices"
+    contentPath: 03-best-practices.md
+  - title: "Multi-Stage Builds"
+    contentPath: 04-multistage-builds.md
+  - title: "Choosing a Base Image"
+    contentPath: 05-base-images.md
+  - title: "Build Secrets"
+    contentPath: 06-build-secrets.md
+  - title: "Wrap-up"
+    contentPath: 07-wrap-up.md
 
-# Services are used to add default tabs in the Labspace interface.
-# The IDE will always be present as a service, but you can add additional services as needed.
-# Icon values come from https://fonts.google.com/icons/
 services:
-  - id: app
-    url: http://localhost:3000
-    title: App
-    icon: anchor
+  - id: quote-app
+    title: Quote App
+    url: http://localhost:5050
+    icon: format_quote
