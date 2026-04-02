@@ -1,5 +1,5 @@
 metadata:
-  id: building-container-images
+  id: dockersamples/building-container-images
   sourceRepo: github.com/dockersamples/labspace-building-images
   contentVersion: 1.0.0
 
