@@ -2,6 +2,3 @@ services:
   configurator:
     environment:
       PROJECT_CLONE_URL: https://github.com/dockersamples/labspace-building-images
-
-  workspace:
-    image: dockersamples/labspace-workspace-base
