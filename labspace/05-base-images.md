@@ -4,16 +4,16 @@ The base image is the foundation of everything you base on top of. Picking the r
 
 Python alone comes in several variants with very different sizes and tradeoffs:
 
-| Image | Approximate size | Use case |
+| Image | Approximate disk size | Use case |
 |-------|-----------------|----------|
-| `python:3.12` | ~1 GB | Full Debian — most compatible, largest |
-| `python:3.12-slim` | ~130 MB | Debian without optional packages — good default |
-| `python:3.12-alpine` | ~50 MB | Alpine Linux — smallest, uses musl libc |
+| `python:3.14` | ~1.6 GB | Full Debian — most compatible, largest |
+| `python:3.14-slim` | ~205 MB | Debian without optional packages — good default |
+| `python:3.14-alpine` | ~77 MB | Alpine Linux — smallest, uses musl libc |
 
 Pull them and compare:
 
 ```bash
-docker pull python:3.12-slim && docker pull python:3.12-alpine
+docker pull python:$$pythonImageTag$$-slim && docker pull python:$$pythonImageTag$$-alpine
 ```
 
 ```bash
@@ -21,11 +21,11 @@ docker images python
 ```
 
 > [!WARNING]
-> Alpine uses **musl libc** instead of **glibc**. Most pure-Python packages work fine, but packages with C extensions (numpy, Pillow, cryptography) may fail to install or behave differently. `python:3.12-slim` is usually the safer default for Python apps.
+> Alpine uses **musl libc** instead of **glibc**. Most pure-Python packages work fine, but packages with C extensions (numpy, Pillow, cryptography) may fail to install or behave differently. `python:$$pythonImageTag$$-slim` is usually the safer default for Python apps.
 
 ## Docker Hardened Images 🔒
 
-Community images like `python:3.12-slim` are well-maintained, but they still ship with packages your app doesn't need — and those packages carry CVEs. **Docker Hardened Images (DHI)** take a different approach: they are built from scratch to include only what is strictly necessary to run the application, resulting in up to 95% fewer vulnerabilities than their community equivalents.
+Community images like `python:$$pythonImageTag$$-slim` are well-maintained, but they still ship with packages your app doesn't need — and those packages carry CVEs. **Docker Hardened Images (DHI)** take a different approach: they are built from scratch to include only what is strictly necessary to run the application, resulting in up to 95% fewer vulnerabilities than their community equivalents.
 
 DHI are **free to use** and available at `dhi.io`, but do require authentication. 
 
@@ -40,7 +40,7 @@ DHI are **free to use** and available at `dhi.io`, but do require authentication
 2. Once authenticated, you can pull any DHI image:
 
     ```bash
-    docker pull dhi.io/python:3.13
+    docker pull dhi.io/python:$$pythonImageTag$$
     ```
 
     ```bash
@@ -53,8 +53,8 @@ DHI images come in two variants:
 
 | Variant | Example | Contains |
 |---------|---------|----------|
-| Runtime | `dhi.io/python:3.13` | Python runtime only — no shell, no package manager |
-| Dev | `dhi.io/python:3.13-dev` | Adds shell and package manager for base-time use |
+| Runtime | `dhi.io/python:$$pythonImageTag$$` | Python runtime only — no shell, no package manager |
+| Dev | `dhi.io/python:$$pythonImageTag$$-dev` | Adds shell and package manager for base-time use |
 
 This maps naturally onto the multi-stage pattern from the previous section, with one extra wrinkle: the runtime image has **no pip**, so you can't `RUN pip install` in the production stage. The solution is to install packages into a **virtual environment** in the dev stage and copy the whole venv across.
 
@@ -71,7 +71,7 @@ Copying source from `test` (rather than the base context) preserves the dependen
     ```dockerfile save-as=Dockerfile
     # ---- Stage 1: Build ----
     # Install only production dependencies into a virtual environment.
-    FROM dhi.io/python:3.13-dev AS base
+    FROM dhi.io/python:$$pythonImageTag$$-dev AS base
 
     WORKDIR /app
 
@@ -95,7 +95,7 @@ Copying source from `test` (rather than the base context) preserves the dependen
 
 
     # ---- Stage 3: Production ----
-    FROM dhi.io/python:3.13 AS production
+    FROM dhi.io/python:$$pythonImageTag$$ AS production
 
     WORKDIR /app
 
@@ -139,16 +139,16 @@ Both DHI and Google's distroless images follow the same principle of shipping th
 - **SBOMs included** — a full software bill of materials for every image
 - **Familiar Docker Hub authentication** — no new tooling required
 
-## A Note on Tags
+## A note on tags
 
-Using a version tag like `python:3.12-slim` is convenient, but the underlying packages update over time. For fully reproducible builds, pin to a specific digest:
+Using a version tag like `python:$$pythonImageTag$$-slim` is convenient, but the underlying packages update over time. For fully reproducible builds, pin to a specific digest:
 
 ```bash
-docker inspect python:3.12-slim --format '{{index .RepoDigests 0}}'
+docker inspect python:$$pythonImageTag$$-slim --format '{{index .RepoDigests 0}}'
 ```
 
 ```dockerfile no-run-button
-FROM python:3.12-slim@sha256:<digest>
+FROM python:$$pythonImageTag$$-slim@sha256:<digest>
 ```
 
 For most teams, pinning to the tag is a reasonable tradeoff between reproducibility and staying current with security patches. DHI makes this easier — each image is continuously updated and the vulnerability data is publicly transparent, so you can trust that the latest tag is in good shape.

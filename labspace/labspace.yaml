@@ -27,3 +27,11 @@ services:
     title: Quote App
     url: http://localhost:5050
     icon: format_quote
+
+variables:
+  # This variable should reflect a version number (3.14). Note that this variable is used in direct
+  # image tags (python:3.14), but also in segments where a -slim suffix is added (python:3.14-slim).
+  # Additionally, it is current used for DHI image tags (dhi/python:3.14 and dhi/python:3.14-dev).
+  #
+  # Important note: When updating this, also update project/Dockerfile to match the same version.
+  pythonImageTag: 3.14

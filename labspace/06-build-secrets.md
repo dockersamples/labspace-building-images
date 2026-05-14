@@ -2,14 +2,14 @@
 
 Secrets — API keys, tokens, passwords — are often needed at build time. For example, to authenticate to a private package registry, download a licensed dependency, or call an internal API.
 
-## The Wrong Way: Build Arguments 🚨
+## The wrong way: Build Arguments 🚨
 
 A tempting but **dangerous** approach is to pass secrets as build arguments.
 
 1. Create a file named `Dockerfile.bad-secret` with the following contents:
 
     ```dockerfile save-as=Dockerfile.bad-secret highlight=5-7
-    FROM python:3.12-slim
+    FROM python:$$pythonImageTag$$-slim
 
     WORKDIR /app
 
@@ -57,7 +57,7 @@ A tempting but **dangerous** approach is to pass secrets as build arguments.
     > [!CAUTION]
     > `ARG` values are stored in the image metadata. Even if you use `RUN unset API_KEY` afterwards, the value is permanently embedded in the layer that used it.
 
-## The Right Way: Build Secrets 🔒
+## The right way: Build Secrets 🔒
 
 Docker BuildKit provides `--mount=type=secret`, which makes a secret available during a single `RUN` step **without writing it to any layer**. The secret exists only in memory during that instruction and is never committed to the image.
 
@@ -72,7 +72,7 @@ The following steps are going to use a file that provides the secret, but there 
 2. Create a `Dockerfile.good-secret` with the following contents:
 
     ```dockerfile save-as=Dockerfile.good-secret highlight=7-11
-    FROM python:3.12-slim
+    FROM python:$$pythonImageTag$$-slim
 
     WORKDIR /app
 

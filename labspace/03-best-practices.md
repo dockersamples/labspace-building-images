@@ -26,7 +26,7 @@ Notice that `pip install` runs again even though `requirements.txt` didn't chang
 1. Restructure the Dockerfile so that `requirements.txt` is copied and packages are installed *before* the source code is copied:
 
     ```dockerfile save-as=Dockerfile highlight=5-8
-    FROM python:3.12
+    FROM python:$$pythonImageTag$$
 
     WORKDIR /app
 
@@ -115,7 +115,7 @@ By default, the process inside your container runs as `root`. While containers a
 1. Add a `USER` instruction to switch to a non-privileged user before starting the app:
 
     ```dockerfile save-as=Dockerfile highlight=10
-    FROM python:3.12
+    FROM python:$$pythonImageTag$$
 
     WORKDIR /app
 

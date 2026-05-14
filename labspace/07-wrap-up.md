@@ -2,14 +2,14 @@
 
 You've taken a naive, oversized Dockerfile and transformed it into a production-grade image — step by step, each section building on the last.
 
-## What You Built
+## What you built
 
 Here's the final Dockerfile from this lab:
 
 ```dockerfile no-run-button
 # ---- Stage 1: Base ----
 # Install only production dependencies into a virtual environment.
-FROM dhi.io/python:3.13-dev AS base
+FROM dhi.io/python:$$pythonImageTag$$-dev AS base
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN python -m pytest tests/ -v
 
 
 # ---- Stage 3: Production ----
-FROM dhi.io/python:3.13 AS production
+FROM dhi.io/python:$$pythonImageTag$$ AS production
 
 WORKDIR /app
 
@@ -55,7 +55,7 @@ CMD ["python", "src/app.py"]
 
 Compare that to where you started — `COPY . .` before `pip install`, running as root, no multi-stage, no `.dockerignore`. The final image uses Docker Hardened Images with near-zero CVEs and is significantly more secure.
 
-## See the Improvement 📊
+## See the improvement 📊
 
 Do a final side-by-side comparison of everything you built throughout the lab:
 

@@ -1,21 +1,21 @@
 # Multi-Stage Builds 📦
 
-Your image is getting better, but it's still carrying around the full `python:3.12` base image. That image ships with a compiler, package build tools, and hundreds of megabytes of things your app will never use at runtime.
+Your image is getting better, but it's still carrying around the full `python:$$pythonImageTag$$` base image. That image ships with a compiler, package build tools, and hundreds of megabytes of things your app will never use at runtime.
 
 **Multi-stage builds** let you use one environment to build and test your app, and a completely different (smaller) environment to run it. Docker only ships the final stage — everything else is discarded.
 
 ```mermaid
 graph LR
     subgraph "Stage 1: test"
-        A["python:3.12<br>full image"] --> B["Install all deps<br>(incl. pytest)"] --> C["Run tests ✅"]
+        A["python:$$pythonImageTag$$<br>full image"] --> B["Install all deps<br>(incl. pytest)"] --> C["Run tests ✅"]
     end
     subgraph "Stage 2: production"
-        D["python:3.12-slim<br>minimal image"] --> E["Install runtime<br>deps only"] --> F["Copy source<br>& run app 🚀"]
+        D["python:$$pythonImageTag$$-slim<br>minimal image"] --> E["Install runtime<br>deps only"] --> F["Copy source<br>& run app 🚀"]
     end
     C -. "COPY --from=test" .-> F
 ```
 
-## Check Your Current Image Size
+## Check your current image size
 
 Before making changes, note where you're starting from:
 
@@ -25,7 +25,7 @@ docker images quote-app:v2
 
 Keep that number in mind.
 
-## Write the Multi-Stage Dockerfile
+## Write the multi-stage Dockerfile
 
 The project already includes test files in `tests/` and dev dependencies in `requirements-dev.txt`. Time to use them.
 
@@ -35,7 +35,7 @@ The project already includes test files in `tests/` and dev dependencies in `req
     # ---- Stage 1: Test ----
     # Run tests using the full Python image with dev dependencies.
     # If tests fail, the build stops here — nothing broken ships.
-    FROM python:3.12 AS test
+    FROM python:$$pythonImageTag$$ AS test
 
     WORKDIR /app
 
@@ -50,7 +50,7 @@ The project already includes test files in `tests/` and dev dependencies in `req
     # ---- Stage 2: Production ----
     # Use the slim image for the smallest possible runtime footprint.
     # Dev dependencies, test files, and the test stage itself never make it here.
-    FROM python:3.12-slim AS production
+    FROM python:$$pythonImageTag$$-slim AS production
 
     WORKDIR /app
 
@@ -74,12 +74,12 @@ The project already includes test files in `tests/` and dev dependencies in `req
     docker build -t quote-app:v3 .
     ```
 
-    Watch the output — you'll see pytest run in the test stage, then a fresh production image being assembled from `python:3.12-slim`.
+    Watch the output — you'll see pytest run in the test stage, then a fresh production image being assembled from `python:$$pythonImageTag$$-slim`.
 
     > [!NOTE]
     > The `COPY --from=test` in the production stage is what forces BuildKit to run the test stage. BuildKit builds a dependency graph between stages and will skip any stage whose outputs are never referenced. If the production stage copied `requirements.txt` directly from the build context instead, BuildKit could skip the test stage entirely — and a broken build could ship.
 
-## Compare the Sizes
+## Compare the sizes
 
 Check the sizes of the images by using the `docker images` command:
 
@@ -87,9 +87,9 @@ Check the sizes of the images by using the `docker images` command:
 docker images quote-app
 ```
 
-The `v3` image should be dramatically smaller than `v2`. The difference comes from switching from `python:3.12` (the full Debian-based image) to `python:3.12-slim` in the production stage.
+The `v3` image should be dramatically smaller than `v2`. The difference comes from switching from `python:$$pythonImageTag$$` (the full Debian-based image) to `python:$$pythonImageTag$$-slim` in the production stage.
 
-## Verify Tests Are the Gatekeeper
+## Verify tests are the gatekeeper
 
 The real power of this pattern is that a failing test blocks the entire build. 
 
@@ -114,7 +114,7 @@ The real power of this pattern is that a failing test blocks the entire build.
     docker build -t quote-app:v3 .
     ```
 
-## Verify Dev Tools Are Gone
+## Verify dev tools are gone
 
 1. Confirm that `pytest` isn't present in the production image:
 

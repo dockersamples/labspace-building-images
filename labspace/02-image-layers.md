@@ -4,7 +4,7 @@ Docker images aren't single files — they're stacks of read-only **layers**. Ea
 
 ```mermaid
 graph BT
-    A["FROM python:3.12  (many base layers)"]
+    A["FROM python:$$pythonImageTag$$  (many base layers)"]
     B["WORKDIR /app"]
     C["COPY . ."]
     D["RUN pip install ..."]
@@ -14,7 +14,7 @@ graph BT
 
 This layered structure is what makes Docker fast: if a layer hasn't changed since the last build, Docker reuses the **cached** version instead of rebuilding it.
 
-## Inspect Your Image's Layers
+## Inspect your image's layers
 
 See exactly what layers make up your image:
 
@@ -32,7 +32,7 @@ docker images quote-app
 
 That's a lot of megabytes for a tiny app that returns quotes. You'll fix that significantly in later sections — but first, there's an important trap to understand.
 
-## The Layer Cleanup Pitfall ⚠️
+## The layer cleanup pitfall ⚠️
 
 A very common pattern looks like this when someone wants to install a system package and clean up afterwards:
 
@@ -46,12 +46,12 @@ This *seems* correct — install the package, then delete the cache. But it **do
 
 Each `RUN` instruction creates a **new layer**. When you delete files in a later layer, the files aren't removed from the image — they're just hidden. The original layer containing the apt cache is still embedded in the image, still consuming space.
 
-### See It in Action
+### See it in action
 
 1. Create a file named `Dockerfile.bad-cleanup` with the following contents:
 
     ```dockerfile save-as=Dockerfile.bad-cleanup
-    FROM python:3.12
+    FROM python:$$pythonImageTag$$
 
     WORKDIR /app
 
@@ -77,7 +77,7 @@ Each `RUN` instruction creates a **new layer**. When you delete files in a later
 3. Now create a file named `Dockerfile.good-cleanup` that will install and clean up in **the same `RUN` command**:
 
     ```dockerfile save-as=Dockerfile.good-cleanup
-    FROM python:3.12
+    FROM python:$$pythonImageTag$$
 
     WORKDIR /app
 
@@ -106,12 +106,12 @@ Each `RUN` instruction creates a **new layer**. When you delete files in a later
     docker images quote-app
     ```
 
-The `good-cleanup` image is noticeably smaller. By combining the install and cleanup into a single `RUN`, the apt cache files are never committed to any layer.
+The `good-cleanup` image is smaller. Sure, this example is fairly trivial. But, by the final result in the container is the same, yet one is ~20MB smaller.
 
 > [!TIP]
 > The rule of thumb: if you create temporary files (downloaded archives, build artifacts, package manager caches) during a `RUN` step, delete them in that same `RUN` step. This is especially important with `apt-get`, `yum`, `apk`, and similar package managers.
 
-## Clean Up the Test Images
+## Clean up the test images
 
 ```bash
 docker rmi quote-app:bad-cleanup quote-app:good-cleanup
